@@ -1,13 +1,8 @@
-use std::env;
+use rust::{get_input_file_path, read_input};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() < 2 {
-        eprintln!("Please provide an input file path");
-        return;
-    }
-    let input_path = &args[1];
-    let input = std::fs::read_to_string(input_path).unwrap();
+    let input_path = get_input_file_path().unwrap();
+    let input = read_input(&input_path).unwrap();
 
     let turns: Vec<&str> = input.lines().collect();
 
