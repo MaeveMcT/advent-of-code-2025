@@ -29,11 +29,25 @@ fn main() {
     for range in ranges {
         for current_id in range {
             let id = current_id.to_string();
-            let id_len = id.len();
-            let id_substrs = id.split_at(id_len / 2);
 
-            if id_substrs.0 == id_substrs.1 {
-                invalid_ids.push(current_id);
+            let mut id_substrs = vec![];
+            for i in 0..(id.len() / 2) {
+                for j in (i + 1)..=(id.len() / 2) {
+                    id_substrs.push(&id[i..j]);
+                }
+            }
+
+            for substr in id_substrs {
+                let occurences = id
+                    .as_bytes() // Yeah I'm assuming it's only going to be UTF characters
+                    // that don't go beyond 1 code point. Sue me
+                    .chunks(substr.len())
+                    .filter(|window| *window == substr.as_bytes())
+                    .count();
+                if occurences >= 2 && substr.len() * occurences == id.len() {
+                    invalid_ids.push(current_id);
+                    break;
+                }
             }
         }
     }
