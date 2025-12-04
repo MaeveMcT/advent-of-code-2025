@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use rust::{get_input_file_path, read_input};
 
 fn main() {
@@ -6,49 +8,82 @@ fn main() {
 
     let banks: Vec<&str> = input.lines().collect();
 
-    let battery_pairs: Vec<_> = banks
+    let num_batteries_to_combine = 12;
+    let battery_sequences: Vec<_> = banks
         .iter()
         .map(|bank| {
-            let mut biggest_seen = '0';
-            let mut next_biggest = '0';
+            let mut biggest_sequence: VecDeque<char> = VecDeque::new();
 
             // iterate through chars
             // take note of biggest current
             // take note of biggest since latest biggest
             let batteries: Vec<char> = bank.chars().collect();
-            for (i, battery) in batteries.iter().enumerate() {
-                if *battery > next_biggest {
-                    next_biggest = *battery;
-                }
 
-                if i == batteries.len() - 1 {
-                    break;
+            for &battery in batteries.iter().rev() {
+                let sequence_so_far: String = biggest_sequence.iter().collect();
+                println!("Sequence so far {}", sequence_so_far);
+                println!("Considering {}", battery);
+                if biggest_sequence.len() == num_batteries_to_combine {
+                    println!("Sequence is full, gonna evict");
+                    // Time to evict something!
+                    let mut i = 0;
+                    let mut smallest_seen = ('9', 0);
+                    while i < biggest_sequence.len() - 1 {
+                        let joltage = biggest_sequence[i];
+                        println!("Joltage {}", joltage);
+                        if joltage < smallest_seen.0 {
+                            smallest_seen = (joltage, i);
+                            println!("Smallest seen {} at {}", smallest_seen.0, smallest_seen.1);
+                        }
+                        i += 1;
+                    }
+                    if battery < biggest_sequence[0] {
+                        // Sequence is only going to get smaller if we move the first number in the
+                        // sequence for the sake of a smaller jotage;
+                        continue;
+                    }
+                    if battery > smallest_seen.0 {
+                        println!(
+                            "Removing joltage {} from index {}",
+                            smallest_seen.0, smallest_seen.1
+                        );
+                        biggest_sequence.remove(smallest_seen.1);
+                        biggest_sequence.push_front(battery);
+                    }
+                } else {
+                    // Plenty of room. Fill it up
+                    biggest_sequence.push_front(battery);
+                    println!("Adding {} to the sequence", battery);
+                    continue;
                 }
-
-                if *battery > biggest_seen {
-                    biggest_seen = *battery;
-                    next_biggest = batteries[i + 1];
-                }
+                // If the sequence is filled up, whenever we find a new biggest, we can just go
+                //
+                // We know that the current battery we're evaluating is the furthest left we've
+                // seen, so we can look into the sequence and remove the smallest thing from it,
+                // then push the current battery to the front
+                //
+                // 818181911112111
             }
-            return (biggest_seen, next_biggest);
+            return biggest_sequence;
         })
         .collect();
 
-    for pair in &battery_pairs {
-        println!("{}{}", pair.0, pair.1);
+    let battery_sequences: Vec<_> = battery_sequences
+        .iter()
+        .map(|chars| {
+            let s: String = chars.iter().collect();
+            return s;
+        })
+        .collect();
+    println!("{} sequences", battery_sequences.len());
+    for sequence in &battery_sequences {
+        println!("{}", &sequence);
     }
 
-    let output_joltage: u32 = battery_pairs
+    let output_joltage: u64 = battery_sequences
         .iter()
-        .map(|(a, b)| {
-            // Could we have done this digit conversion earlier? Perhaps. Is it a crime?
-            let mut s = String::new();
-            s.push(*a);
-            s.push(*b);
-            let combined: u32 = s.parse().unwrap();
-            return combined;
-        })
+        .map(|s| s.parse::<u64>().unwrap())
         .sum();
 
-    println!("Total output joltage: {}", output_joltage);
+    println!("Output joltage: {}", output_joltage);
 }
