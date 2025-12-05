@@ -1,5 +1,6 @@
 use rust::{get_input_file_path, read_input};
 
+#[derive(Clone)]
 struct Grid {
     width: u32,
     height: u32,
@@ -19,7 +20,7 @@ fn main() {
         })
         .collect();
 
-    let grid = Grid {
+    let mut grid = Grid {
         width: grid[0].len() as u32, // Assumes all rows are same width
         height: grid.len() as u32,
         grid,
@@ -29,14 +30,24 @@ fn main() {
     let adj = adjacent_positions_in_grid(&grid, 1, 1);
 
     let mut accessible_rows_of_paper = 0;
-    for (i, row) in grid.grid.iter().enumerate() {
-        for (j, &col) in row.iter().enumerate() {
-            if col == '@' {
-                if forklift_can_access(&grid, i, j) {
-                    accessible_rows_of_paper += 1;
+    loop {
+        let mut accessible_paper_positions = vec![];
+        for (i, row) in grid.grid.iter().enumerate() {
+            for (j, &col) in row.iter().enumerate() {
+                if col == '@' {
+                    if forklift_can_access(&grid, i, j) {
+                        accessible_rows_of_paper += 1;
+                        accessible_paper_positions.push((i, j));
+                    }
                 }
             }
         }
+
+        let new_grid = remove_accessible_paper_from(&grid, &accessible_paper_positions);
+        if new_grid.grid == grid.grid {
+            break;
+        }
+        grid = new_grid;
     }
 
     for pos in &adj {
@@ -44,6 +55,16 @@ fn main() {
     }
 
     println!("Accessible rows of paper: {}", accessible_rows_of_paper);
+}
+
+fn remove_accessible_paper_from(grid: &Grid, accessible_positions: &Vec<(usize, usize)>) -> Grid {
+    let mut new_grid = grid.clone();
+
+    for (x, y) in accessible_positions {
+        new_grid.grid[*x][*y] = 'x';
+    }
+
+    return new_grid;
 }
 
 fn forklift_can_access(grid: &Grid, x: usize, y: usize) -> bool {
