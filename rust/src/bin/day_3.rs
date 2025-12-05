@@ -14,9 +14,6 @@ fn main() {
         .map(|bank| {
             let mut biggest_sequence: VecDeque<char> = VecDeque::new();
 
-            // iterate through chars
-            // take note of biggest current
-            // take note of biggest since latest biggest
             let batteries: Vec<char> = bank.chars().collect();
 
             for &battery in batteries.iter().rev() {
@@ -39,7 +36,7 @@ fn main() {
                     }
                     if battery < biggest_sequence[0] {
                         // Sequence is only going to get smaller if we move the first number in the
-                        // sequence for the sake of a smaller jotage;
+                        // sequence for the sake of a smaller joltage;
                         continue;
                     }
                     if battery > smallest_seen.0 {
